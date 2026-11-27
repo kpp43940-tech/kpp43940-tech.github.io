@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -87,7 +88,7 @@ td { word-break: break-word; }
 <body>
 
 <div id="loginPage" class="card">
-  <h1>💌 管理员登录</h1>
+  <h1>💕 管理员登录</h1>
   <p class="subtitle">约会邀请管理中心</p>
 
   <input id="username" placeholder="管理员账号" autocomplete="username">
@@ -103,7 +104,7 @@ td { word-break: break-word; }
   <div class="card">
     <div class="toolbar">
       <div>
-        <h1 style="text-align:left;margin-bottom:5px">💌 约会管理后台</h1>
+        <h1 style="text-align:left;margin-bottom:5px">💕 约会管理后台</h1>
         <span style="color:#999">欢迎回来，管理员</span>
       </div>
       <div>
@@ -301,16 +302,16 @@ function logout() {
   document.getElementById('loginPage').style.display = 'block';
   document.getElementById('username').value = '';
   document.getElementById('password').value = '';
+  document.getElementById('loginStatus').textContent = '';
 }
 
-// 页面打开自动检测是否已有登录凭证
-window.onload = async function(){
-  if(token){
-    document.getElementById('loginPage').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
-    await loadRecords();
-  }
+// 页面刷新后，如果当前标签页还有有效令牌，尝试恢复登录
+if (token) {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadRecords();
 }
 </script>
+
 </body>
 </html>
