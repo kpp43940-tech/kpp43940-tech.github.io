@@ -1,0 +1,494 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一路辛苦啦！</title>
+<style>
+* { box-sizing:border-box; }
+
+body {
+  margin:0;
+  min-height:100vh;
+  overflow-x:hidden;
+  padding:18px 14px;
+  font-family:"Microsoft YaHei",Arial,sans-serif;
+  color:#755d65;
+  background:linear-gradient(135deg,#fff1e9,#ffe8f1,#f1eaff);
+}
+
+.container {
+  position:relative;
+  max-width:440px;
+  min-height:650px;
+  margin:15px auto;
+  padding:22px 19px;
+  overflow:hidden;
+  border-radius:30px;
+  background:rgba(255,255,255,.94);
+  box-shadow:0 15px 40px #b9859525;
+  text-align:center;
+}
+
+.decor {
+  position:fixed;
+  pointer-events:none;
+  opacity:.65;
+  animation:float 4s ease-in-out infinite;
+  z-index:0;
+}
+.d1 { top:9%; left:5%; font-size:27px; }
+.d2 { top:22%; right:6%; font-size:23px; animation-delay:1s; }
+.d3 { bottom:13%; left:7%; font-size:25px; animation-delay:2s; }
+
+@keyframes float {
+  0%,100% { transform:translateY(0) rotate(-5deg); }
+  50% { transform:translateY(-15px) rotate(8deg); }
+}
+
+.progress {
+  height:9px;
+  background:#f7e6eb;
+  border-radius:20px;
+  overflow:hidden;
+  margin:14px 0 8px;
+}
+.progress-bar {
+  height:100%;
+  width:20%;
+  border-radius:20px;
+  background:linear-gradient(90deg,#f6a0ad,#dba5e8);
+  transition:width .5s;
+}
+.step-text {
+  color:#b69ba5;
+  font-size:12px;
+}
+
+.page {
+  display:none;
+}
+.page.active {
+  display:block;
+  animation:pageIn .5s ease both;
+}
+@keyframes pageIn {
+  from { opacity:0; transform:translateX(25px) scale(.97); }
+  to { opacity:1; transform:translateX(0) scale(1); }
+}
+
+.hero {
+  font-size:75px;
+  margin:30px 0 15px;
+  animation:bounce 2s infinite;
+}
+@keyframes bounce {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(-12px); }
+}
+
+h1 {
+  color:#e58da4;
+  font-size:27px;
+  margin:12px 0;
+}
+.subtitle {
+  color:#a98e99;
+  font-size:14px;
+  line-height:2;
+  margin:12px 0 23px;
+}
+
+.options {
+  display:grid;
+  gap:13px;
+  margin-top:22px;
+}
+
+.option {
+  position:relative;
+  width:100%;
+  padding:16px 12px;
+  border:2px solid #f3dce4;
+  border-radius:19px;
+  background:#fff8fa;
+  color:#876b76;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 4px 0 #f2e0e6;
+  transition:transform .2s,background .2s,box-shadow .2s;
+  animation:buttonIn .4s ease both;
+}
+.option:nth-child(2) { animation-delay:.07s; }
+.option:nth-child(3) { animation-delay:.14s; }
+.option:nth-child(4) { animation-delay:.21s; }
+
+@keyframes buttonIn {
+  from { opacity:0; transform:translateY(12px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.option:active {
+  transform:translateY(4px) scale(.97);
+  box-shadow:0 0 0 #f2e0e6;
+}
+.option.selected {
+  background:#ffe3ed;
+  border-color:#e78eaa;
+  color:#d56f91;
+  transform:scale(1.035);
+  box-shadow:0 4px 0 #f1c8d6;
+}
+
+.main-btn {
+  width:100%;
+  border:0;
+  border-radius:30px;
+  padding:16px;
+  margin-top:24px;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+  background:linear-gradient(100deg,#f3a0ae,#d99ed0);
+  box-shadow:0 6px 0 #e9c5d5;
+  cursor:pointer;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { transform:scale(1); }
+  50% { transform:scale(1.025); }
+}
+.main-btn:active {
+  transform:translateY(4px);
+  box-shadow:none;
+}
+
+.back-btn {
+  border:0;
+  background:#fff0f4;
+  color:#bd8498;
+  border-radius:25px;
+  padding:10px 22px;
+  margin-top:18px;
+  cursor:pointer;
+}
+
+.train {
+  display:inline-block;
+  font-size:62px;
+  animation:trainMove 3s ease-in-out infinite;
+}
+@keyframes trainMove {
+  0% { transform:translateX(-12px) rotate(-3deg); }
+  50% { transform:translateX(12px) rotate(3deg); }
+  100% { transform:translateX(-12px) rotate(-3deg); }
+}
+
+.bubble {
+  display:inline-block;
+  background:#fff0f4;
+  border-radius:20px;
+  padding:10px 16px;
+  color:#bd8398;
+  font-size:13px;
+  margin:6px;
+}
+
+.message-options {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:9px;
+  margin:18px 0;
+}
+.message-chip {
+  border:1px solid #f0d5df;
+  border-radius:22px;
+  padding:10px 12px;
+  background:#fff6f8;
+  color:#946d7b;
+  font-size:13px;
+  cursor:pointer;
+  transition:.2s;
+}
+.message-chip:active { transform:scale(.94); }
+.message-chip.selected {
+  background:#ffe1eb;
+  border-color:#e68da8;
+  color:#d16f8e;
+}
+
+textarea {
+  width:100%;
+  min-height:105px;
+  border:1px solid #efd5df;
+  border-radius:16px;
+  background:#fffafa;
+  padding:13px;
+  font-family:inherit;
+  font-size:14px;
+  resize:vertical;
+  outline:none;
+  color:#755d65;
+}
+
+.footer {
+  margin-top:25px;
+  color:#c3a9b1;
+  font-size:12px;
+}
+
+#toast {
+  position:fixed;
+  left:50%;
+  bottom:30px;
+  transform:translateX(-50%);
+  background:#856a78;
+  color:white;
+  padding:12px 20px;
+  border-radius:25px;
+  font-size:13px;
+  opacity:0;
+  pointer-events:none;
+  transition:.3s;
+  z-index:10;
+}
+#toast.show { opacity:1; }
+
+</style>
+</head>
+<body>
+
+<div class="decor d1">💗</div>
+<div class="decor d2">⭐</div>
+<div class="decor d3">🌷</div>
+
+<div class="container">
+  <div class="step-text" id="stepText">旅途结束啦 · 第 1 / 5 关</div>
+  <div class="progress">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- 第一关 -->
+  <section class="page active" id="page1">
+    <div class="hero">🚄💨</div>
+    <h1>旅途结束啦！</h1>
+    <div class="subtitle">
+      恭喜完成长途奔波副本！<br>
+      今天辛苦你啦～<br>
+      现在来领取一份暖心关怀吧！
+    </div>
+    <div class="bubble">⭐ 今日任务：平安抵达</div>
+    <button class="main-btn" onclick="goTo(2)">
+      开始闯关！🎮
+    </button>
+  </section>
+
+  <!-- 第二关 -->
+  <section class="page" id="page2">
+    <div class="hero">🏠🔑</div>
+    <h1>成功抵达目的地了吗？</h1>
+    <div class="subtitle">
+      快汇报一下你的行程！<br>
+      让我看看你现在在哪里～
+    </div>
+    <div class="options" data-group="arrival">
+      <button class="option" onclick="choose(this,'arrival','已经回到自己的小窝啦 🏠')">🏠 已经回到自己的小窝啦</button>
+      <button class="option" onclick="choose(this,'arrival','还在路上，继续赶路 🚄')">🚄 还在路上，继续赶路</button>
+      <button class="option" onclick="choose(this,'arrival','已经到地方，准备休息 🧳')">🧳 已经到地方，准备休息</button>
+    </div>
+    <button class="main-btn" onclick="nextFrom('arrival',3)">下一关 →</button>
+    <button class="back-btn" onclick="goTo(1)">← 返回上一关</button>
+  </section>
+
+  <!-- 第三关 -->
+  <section class="page" id="page3">
+    <div class="hero">🔋🥱</div>
+    <h1>你的电量还剩多少？</h1>
+    <div class="subtitle">
+      经过一路奔波，<br>
+      你的身体现在还剩多少电量呢？
+    </div>
+    <div class="options" data-group="feeling">
+      <button class="option" onclick="choose(this,'feeling','100%，还能再战 ✨')">🔋 100%，还能再战！</button>
+      <button class="option" onclick="choose(this,'feeling','50%，需要充电 🔋')">🔋 50%，需要充电</button>
+      <button class="option" onclick="choose(this,'feeling','5%，急需躺平 🪫')">🪫 5%，急需躺平！</button>
+      <button class="option" onclick="choose(this,'feeling','电量未知，先休息再说 ☁️')">☁️ 电量未知，先休息再说</button>
+    </div>
+    <button class="main-btn" onclick="nextFrom('feeling',4)">下一关 →</button>
+    <button class="back-btn" onclick="goTo(2)">← 返回上一关</button>
+  </section>
+
+  <!-- 第四关 -->
+  <section class="page" id="page4">
+    <div class="hero">🍜🛏️🛁</div>
+    <h1>现在最想干什么？</h1>
+    <div class="subtitle">
+      终于可以放松一下啦！<br>
+      选一个你现在最想做的事情～
+    </div>
+    <div class="options" data-group="help">
+      <button class="option" onclick="choose(this,'help','躺平，谁也别叫我 🛏️')">🛏️ 躺平，谁也别叫我</button>
+      <button class="option" onclick="choose(this,'help','吃点好吃的 🍜')">🍜 吃点好吃的</button>
+      <button class="option" onclick="choose(this,'help','洗个舒服的澡 🚿')">🚿 洗个舒服的澡</button>
+      <button class="option" onclick="choose(this,'help','找人聊聊天 💬')">💬 找人聊聊天</button>
+      <button class="option" onclick="choose(this,'help','其他，暂时还没想好 🌈')">🌈 其他，暂时还没想好</button>
+    </div>
+    <button class="main-btn" onclick="nextFrom('help',5)">最后一关 →</button>
+    <button class="back-btn" onclick="goTo(3)">← 返回上一关</button>
+  </section>
+
+  <!-- 第五关 -->
+  <section class="page" id="page5">
+    <div class="hero">💌🌷</div>
+    <h1>给我留句话吧！</h1>
+    <div class="subtitle">
+      最后一个小任务～<br>
+      下面有一些话可以直接选，<br>
+      当然也可以自己写！
+    </div>
+
+    <div class="message-options">
+      <button class="message-chip" onclick="insertMessage(this,'谢谢你的关心！❤️')">❤️ 谢谢你的关心</button>
+      <button class="message-chip" onclick="insertMessage(this,'今天路上还挺顺利的！')">🌷 今天挺顺利</button>
+      <button class="message-chip" onclick="insertMessage(this,'有点累啦，我先躺一会儿～')">😴 我先躺一会儿</button>
+      <button class="message-chip" onclick="insertMessage(this,'下次有机会一起出去玩！')">🎉 下次一起玩</button>
+      <button class="message-chip" onclick="insertMessage(this,'你也要照顾好自己呀！')">🥰 你也照顾好自己</button>
+      <button class="message-chip" onclick="insertMessage(this,'等我休息好了再找你聊天！')">💬 改天聊天</button>
+    </div>
+
+    <textarea id="message" maxlength="500"
+      placeholder="也可以自己写点想说的话……"></textarea>
+
+    <button class="main-btn" onclick="submitCare()">
+      完成任务，发送回复 💗
+    </button>
+    <button class="back-btn" onclick="goTo(4)">← 返回上一关</button>
+  </section>
+
+  <div class="footer">一路辛苦啦，记得好好照顾自己 ✨</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const answers = {
+  arrival:'',
+  feeling:'',
+  help:''
+};
+
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+  });
+
+  document.getElementById('page'+page).classList.add('active');
+
+  document.getElementById('stepText').textContent =
+    '暖心小游戏 · 第 '+page+' / 5 关';
+
+  document.getElementById('progressBar').style.width =
+    (page*20)+'%';
+}
+
+function choose(button,group,value) {
+  answers[group] = value;
+
+  button.parentElement.querySelectorAll('.option')
+    .forEach(b => b.classList.remove('selected'));
+
+  button.classList.add('selected');
+  showToast('选择成功！✨');
+}
+
+function nextFrom(group,page) {
+  if (!answers[group]) {
+    showToast('先选一个答案再继续哦～ 💗');
+    return;
+  }
+  goTo(page);
+}
+
+function insertMessage(button,value) {
+  const area = document.getElementById('message');
+
+  button.classList.toggle('selected');
+
+  if (button.classList.contains('selected')) {
+    if (area.value && !area.value.endsWith('\n')) {
+      area.value += '\n';
+    }
+    area.value += value;
+  } else {
+    area.value = area.value
+      .split('\n')
+      .filter(line => line !== value)
+      .join('\n');
+  }
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  },1800);
+}
+
+
+async function submitCare() {
+  const data = {
+    arrival: answers.arrival || '未选择',
+    feeling: answers.feeling || '未选择',
+    activity: answers.help || '未选择',
+    message: document.getElementById('message').value.trim()
+  };
+
+  if (!data.message) {
+    showToast('可以选一句话，或者自己写一句哦！💌');
+    return;
+  }
+
+  if (data.message.length > 500) {
+    showToast('留言不能超过500字哦！');
+    return;
+  }
+
+  showToast('正在发送你的回复……💗');
+
+  try {
+    const response = await fetch(
+      'https://significant-pelican-d3bx1b552074-1543155648.ap-shanghai.app.tcloudbase.com/submit',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'careSubmit',
+          ...data
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      showToast(result.message || '发送失败，请稍后再试！');
+      return;
+    }
+
+    showToast('回复发送成功！谢谢你的分享 💗');
+
+    console.log('归家关怀回复已保存');
+
+  } catch (error) {
+    console.error('关怀回复发送失败：', error);
+    showToast('网络好像开小差了，请稍后再试！');
+  }
+}
