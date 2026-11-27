@@ -43,6 +43,8 @@ h1{font-size:30px;line-height:1.35;margin:15px 0 8px;color:#e6538e;text-shadow:2
 
 .foot{text-align:center;font-size:11px;color:#bc91a3;padding:16px 0}
 button:focus-visible{outline:3px solid #d94f89;outline-offset:3px}
+#submitBtn:disabled{opacity:.72;cursor:wait;box-shadow:none;transform:translateY(3px)}
+#submitBtn:focus-visible{outline:3px solid #f7a9c5;outline-offset:3px}
 </style>
 </head>
 <body>
@@ -122,6 +124,8 @@ button:focus-visible{outline:3px solid #d94f89;outline-offset:3px}
    <div style="font-size:34px">🐰💗🎉</div>
    <strong>我们的约会计划</strong>
    <div id="summary"></div>
+   <button id="submitBtn" type="button" style="width:100%;margin-top:16px;border:0;border-radius:999px;padding:14px 18px;background:linear-gradient(135deg,#ff8db5,#ed5a96);color:white;font-size:16px;font-weight:800;box-shadow:0 5px 0 #e7a0bb;cursor:pointer">💌 确认并发送我的选择</button>
+   <p id="submitStatus" role="status" style="font-size:12px;color:#a77e91;min-height:20px;margin:12px 0 0">确认后，约会计划会发送给邀请你的人。</p>
    <p style="font-size:12px;color:#a77e91;margin-bottom:0">期待这一天，一起制造快乐回忆！</p>
   </div>
  </div>
@@ -133,6 +137,9 @@ button:focus-visible{outline:3px solid #d94f89;outline-offset:3px}
 <div class="foot">♡ 今日份快乐，由我们共同签收 ♡</div>
 </main>
 <script>
+// 第一步：部署 Google Apps Script 后，把 Web App URL 粘贴到下面引号内
+const SUBMIT_API_URL = 'https://script.google.com/macros/s/AKfycbxqKTlJdP6fSgygAj4JIgXSkk0bBQxaKxCsox67-Vmg_XgTg5WjlXS4hu4bL7f7gCqovA/exec';
+
 const bg=document.getElementById('bg');
 for(let i=0;i<20;i++){let e=document.createElement('span');e.className='bubble';e.textContent=['♡','💗','✦','💕'][i%4];e.style.left=Math.random()*100+'%';e.style.animationDuration=8+Math.random()*11+'s';e.style.animationDelay=-Math.random()*15+'s';bg.appendChild(e)}
 const welcomePage=document.getElementById('welcomePage');
@@ -189,6 +196,90 @@ nextBtn.addEventListener('click',()=>{
  if(currentPage<4){currentPage++;updateWizard();}
 });
 backBtn.addEventListener('click',()=>{if(currentPage>0){currentPage--;updateWizard();}});
+
+const submitBtn = document.getElementById('submitBtn');
+const submitStatus = document.getElementById('submitStatus');
+let activeSubmitNonce = '';
+
+function sendDatePlan(){
+ const endpoint = SUBMIT_API_URL.trim();
+ if(!endpoint || endpoint.includes('请在这里')){
+  submitStatus.textContent = '还差最后一步：网站管理员需要先配置提交接口。';
+  return;
+ }
+ const place = document.getElementById('place').value.trim();
+ if(!selected || !chosenDay || !chosenTime || !place){
+  submitStatus.textContent = '请先检查活动、日期、时间和集合地点是否填写完整。';
+  return;
+ }
+ const payload = {
+  activity: selected,
+  day: chosenDay,
+  time: chosenTime,
+  place: place,
+  submittedAt: new Date().toISOString(),
+  nonce: 'date-' + Date.now() + '-' + Math.random().toString(36).slice(2)
+ };
+ activeSubmitNonce = payload.nonce;
+ submitBtn.disabled = true;
+ submitBtn.textContent = '正在发送… 💗';
+ submitStatus.textContent = '正在把约会计划送出去，请稍等～';
+
+ const iframe = document.createElement('iframe');
+ iframe.name = 'dateSubmitFrame';
+ iframe.style.display = 'none';
+ iframe.setAttribute('aria-hidden','true');
+ document.body.appendChild(iframe);
+
+ const form = document.createElement('form');
+ form.method = 'POST';
+ form.action = endpoint;
+ form.target = iframe.name;
+ form.style.display = 'none';
+ const field = document.createElement('input');
+ field.type = 'hidden';
+ field.name = 'payload';
+ field.value = JSON.stringify(payload);
+ form.appendChild(field);
+ document.body.appendChild(form);
+
+ const cleanup = () => {
+  form.remove();
+  iframe.remove();
+ };
+ const onMessage = (event) => {
+  const data = event.data || {};
+  if(data.nonce !== activeSubmitNonce) return;
+  if(data.type === 'DATE_SUBMIT_OK'){
+   submitBtn.textContent = '已成功发送 💖';
+   submitStatus.textContent = '发送成功！邀请你的人已经收到约会计划啦～';
+   submitStatus.style.color = '#26945b';
+   window.removeEventListener('message', onMessage);
+   cleanup();
+  }else if(data.type === 'DATE_SUBMIT_ERROR'){
+   submitBtn.disabled = false;
+   submitBtn.textContent = '💌 重新发送我的选择';
+   submitStatus.textContent = data.message || '发送失败，请稍后重试。';
+   submitStatus.style.color = '#d34b72';
+   window.removeEventListener('message', onMessage);
+   cleanup();
+  }
+ };
+ window.addEventListener('message', onMessage);
+ form.submit();
+ setTimeout(() => {
+  if(submitBtn.disabled && submitBtn.textContent === '正在发送… 💗'){
+   submitBtn.disabled = false;
+   submitBtn.textContent = '💌 重新发送我的选择';
+   submitStatus.textContent = '暂时没有收到服务器确认。请检查网络或稍后重试。';
+   submitStatus.style.color = '#d34b72';
+   window.removeEventListener('message', onMessage);
+   cleanup();
+  }
+ }, 20000);
+}
+submitBtn.addEventListener('click', sendDatePlan);
+
 updateWizard();
 </script>
 </body>
