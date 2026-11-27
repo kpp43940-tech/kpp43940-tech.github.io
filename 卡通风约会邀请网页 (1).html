@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ff8db5">
+<title>今天要不要一起出去玩？</title>
+<style>
+:root{--pink:#ff79a9;--hot:#f04f8c;--light:#fff0f6;--ink:#684254;--muted:#a77e91}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);font-family:"Microsoft YaHei",system-ui,sans-serif;background:linear-gradient(150deg,#fff8fb,#ffe6f0 55%,#ffd6e6);min-height:100vh;overflow-x:hidden}
+.bg{position:fixed;inset:0;pointer-events:none;overflow:hidden}.bubble{position:absolute;bottom:-60px;animation:up linear infinite;opacity:.55;font-size:24px}@keyframes up{to{transform:translateY(-115vh) rotate(25deg);opacity:0}}
+.wrap{position:relative;max-width:520px;margin:auto;padding:22px 15px 40px}
+.hidden-step{display:none!important}
+.top{text-align:center;padding:22px 12px 18px}.pill{display:inline-block;background:#fff;border:2px solid #ffd1e2;border-radius:99px;padding:7px 14px;font-size:12px;color:#e56b99;font-weight:700}
+h1{font-size:30px;line-height:1.35;margin:15px 0 8px;color:#e6538e;text-shadow:2px 2px 0 white}.sub{font-size:14px;color:var(--muted);line-height:1.8;margin:0}
+.hero{font-size:58px;display:block;filter:drop-shadow(0 5px 0 #ffc5da);animation:bounce 2s infinite}@keyframes bounce{50%{transform:translateY(-7px) rotate(-5deg)}}
+.panel{background:rgba(255,255,255,.9);border:2px solid white;border-radius:25px;padding:20px;margin:14px 0;box-shadow:0 10px 28px #d77a9c22}
+.heading{font-weight:800;font-size:17px;margin:0 0 5px}.hint{font-size:12px;color:#b18b9b;margin:0 0 15px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{border:2px solid #ffe0eb;background:#fff8fb;border-radius:17px;padding:13px 8px;text-align:center;cursor:pointer;min-height:112px;color:var(--ink);transition:.18s}
+.choice .emoji{display:block;font-size:30px;margin-bottom:5px}.choice b{font-size:14px}.choice small{display:block;color:#a98998;font-size:11px;margin-top:4px}
+.choice.selected{border-color:#f36c9e;background:#ffeaf2;box-shadow:0 0 0 3px #ffd5e4}
+.fields{display:grid;gap:11px}.field label{display:block;font-size:12px;color:#ad7890;font-weight:700;margin:0 0 5px}.field input,.field select{width:100%;border:1.5px solid #f8d3e1;border-radius:12px;padding:12px;font-size:14px;color:var(--ink);background:#fffafd;outline:none}.field input:focus,.field select:focus{border-color:var(--pink)}
+.submit{width:100%;border:0;border-radius:16px;padding:15px;background:linear-gradient(100deg,#ff8db5,#f05291);color:white;font-size:16px;font-weight:800;box-shadow:0 7px 0 #db6c96;cursor:pointer;margin-top:14px}.submit:active{transform:translateY(3px);box-shadow:0 4px 0 #db6c96}
+.result{display:none;text-align:center;background:#fff0f6;border:2px dashed #ff9fbe;border-radius:18px;padding:17px;margin-top:15px;line-height:1.8}.result.show{display:block;animation:pop .3s}@keyframes pop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+.result strong{font-size:20px;color:#e6538e}
+.stepbar{display:flex;align-items:center;gap:10px;margin:0 0 20px;color:#dc6b96;font-size:12px;font-weight:800}
+.track{height:8px;background:#ffe3ed;border-radius:99px;flex:1;overflow:hidden}.track i{display:block;width:25%;height:100%;background:linear-gradient(90deg,#ff9cbd,#ef5b96);border-radius:99px;transition:width .25s}
+.wizard-page{display:none}.wizard-page.active{display:block;animation:pop .25s ease}
+.pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.pick{border:2px solid #ffe0eb;background:#fff8fb;border-radius:15px;padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink);cursor:pointer;font-size:21px}
+.pick b{font-size:13px}.pick small{font-size:10px;color:#ad8b9a}
+.pick.selected,.time-pick.selected{border-color:#f36c9e;background:#ffeaf2;box-shadow:0 0 0 3px #ffd5e4}
+.time-grid{display:grid;gap:10px}
+.time-pick{display:flex;align-items:center;gap:13px;text-align:left;border:2px solid #ffe0eb;background:#fff8fb;border-radius:16px;padding:14px;color:var(--ink);cursor:pointer}
+.time-pick span{font-size:29px}.time-pick b{font-size:15px;display:block}.time-pick small{font-size:11px;color:#ad8b9a;display:block;margin-top:4px}
+.nav-buttons{display:flex;gap:10px;margin-top:18px}
+.nav-buttons button{border:0;border-radius:14px;padding:13px 15px;font-size:14px;font-weight:800;cursor:pointer}
+.next{flex:1;background:linear-gradient(100deg,#ff8db5,#f05291);color:white;box-shadow:0 5px 0 #db6c96}
+.next:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.back{background:#fff0f5;color:#bd6d8e}
+@media(max-width:360px){.pick-grid{grid-template-columns:repeat(3,1fr)}}
+
+.foot{text-align:center;font-size:11px;color:#bc91a3;padding:16px 0}
+button:focus-visible{outline:3px solid #d94f89;outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="bg" id="bg"></div>
+<main class="wrap">
+<header class="top">
+ <span class="pill">💌 一份正在派送的约会邀请</span>
+ <span class="hero">🐰💗</span>
+ <h1>偷偷问你一件事：<br>要不要一起出去玩？</h1>
+ <p class="sub">我已经准备好快乐啦！<br>现在只差你来选一个心动目的地 ✨</p>
+</header>
+<section class="panel" id="welcomePage">
+ <div style="text-align:center;padding:8px 4px 12px">
+  <div style="font-size:58px;animation:bounce 1.8s infinite">🐰💌</div>
+  <div class="pill" style="margin:12px 0">SPECIAL INVITATION · 特别邀请</div>
+  <h2 style="color:#e6538e;font-size:25px;line-height:1.5;margin:10px 0">叮咚！收到一份<br>神秘约会邀请 🎀</h2>
+  <p style="font-size:14px;color:#a77e91;line-height:1.9">有个人想邀请你一起出去玩～<br>愿意解锁这份小小的快乐吗？</p>
+  <div style="background:#fff0f6;border:2px dashed #ffb4cd;border-radius:18px;padding:14px;margin:18px 0">
+   <div style="font-size:30px">💗 🐻 💗</div>
+   <b style="color:#df568b">约会邀请函</b>
+   <p style="font-size:12px;color:#a77e91;margin:6px 0 0">请认真考虑，快乐即将开始！</p>
+  </div>
+  <button class="submit" id="acceptInvite" type="button">我愿意！打开邀请 💖</button>
+  <button class="back" id="maybeLater" type="button" style="width:100%;margin-top:12px">让我看看是什么惊喜 👀</button>
+  <p id="welcomeTip" style="font-size:12px;color:#c1849e;min-height:18px;margin:12px 0 0"></p>
+ </div>
+</section>
+<section class="panel">
+ <p class="heading">🎡 第一步：想去哪里玩？</p>
+ <p class="hint">点一点，选一个你最感兴趣的，也可以之后再商量～</p>
+ <div class="cards" id="cards">
+  <button class="choice" data-name="电影院"><span class="emoji">🎬</span><b>电影院</b><small>电影 + 爆米花</small></button>
+  <button class="choice" data-name="运动馆"><span class="emoji">🏸</span><b>运动馆</b><small>羽毛球 / 保龄球 / 桌球</small></button>
+  <button class="choice" data-name="逛街探店"><span class="emoji">🛍️</span><b>逛街探店</b><small>边逛边发现好吃的</small></button>
+  <button class="choice" data-name="电玩城"><span class="emoji">🕹️</span><b>电玩城</b><small>抓娃娃 / 双人游戏</small></button>
+  <button class="choice" data-name="DIY手工"><span class="emoji">🎨</span><b>DIY手工</b><small>陶艺 / 手作 / 一起画画</small></button>
+  <button class="choice" data-name="桌游馆"><span class="emoji">🎲</span><b>桌游馆</b><small>合作闯关 / 欢乐对决</small></button>
+  <button class="choice" data-name="水族馆或动物园"><span class="emoji">🐠</span><b>水族馆 / 动物园</b><small>看可爱的小动物</small></button>
+  <button class="choice" data-name="公园散步野餐"><span class="emoji">🧺</span><b>公园散步 / 野餐</b><small>晒太阳、拍照片、聊天</small></button>
+  <button class="choice" data-name="密室逃脱"><span class="emoji">🗝️</span><b>密室逃脱</b><small>一起动脑破解谜题</small></button>
+  <button class="choice" data-name="吃美食甜品"><span class="emoji">🍰</span><b>美食甜品</b><small>火锅 / 甜品 / 咖啡店</small></button>
+ </div>
+</section>
+<section class="panel" id="wizard">
+ <div class="stepbar"><span id="stepLabel">第 1 / 4 站</span><div class="track"><i id="progress"></i></div></div>
+ <div class="wizard-page active" data-page="0">
+  <p class="heading">🗓️ 第二步：哪一天出发？</p>
+  <p class="hint">选一个你方便的日子吧～</p>
+  <div class="pick-grid" id="weekdayChoices">
+   <button class="pick" data-value="周一">🌷<b>周一</b><small>星期一</small></button>
+   <button class="pick" data-value="周二">🍓<b>周二</b><small>星期二</small></button>
+   <button class="pick" data-value="周三">🐰<b>周三</b><small>星期三</small></button>
+   <button class="pick" data-value="周四">🍑<b>周四</b><small>星期四</small></button>
+   <button class="pick" data-value="周五">⭐<b>周五</b><small>星期五</small></button>
+   <button class="pick" data-value="周六">🎀<b>周六</b><small>星期六</small></button>
+   <button class="pick" data-value="周日">☀️<b>周日</b><small>星期日</small></button>
+  </div>
+ </div>
+ <div class="wizard-page" data-page="1">
+  <p class="heading">⏰ 第三步：想几点见面？</p>
+  <p class="hint">选一个舒服的时间段，慢慢享受约会～</p>
+  <div class="time-grid" id="timeChoices">
+   <button class="time-pick" data-value="上午"><span>🌞</span><b>上午</b><small>睡醒后，开启美好一天</small></button>
+   <button class="time-pick" data-value="下午"><span>🌤️</span><b>下午</b><small>阳光刚刚好，一起出发</small></button>
+   <button class="time-pick" data-value="晚上"><span>🌙</span><b>晚上</b><small>夜晚也要有小浪漫</small></button>
+  </div>
+ </div>
+ <div class="wizard-page" data-page="2">
+  <p class="heading">📍 第四步：在哪里集合？</p>
+  <p class="hint">写一个方便见面的地点就好啦！</p>
+  <div class="field"><label for="place">💗 集合地点 / 具体地址</label><input id="place" type="text" placeholder="例如：商场一楼大门口"></div>
+ </div>
+ <div class="wizard-page" data-page="3">
+  <p class="heading">💌 约会邀请准备好啦！</p>
+  <p class="hint">检查一下我们的快乐计划～</p>
+  <div class="result show" id="result" style="display:block;margin-top:8px">
+   <div style="font-size:34px">🐰💗🎉</div>
+   <strong>我们的约会计划</strong>
+   <div id="summary"></div>
+   <p style="font-size:12px;color:#a77e91;margin-bottom:0">期待这一天，一起制造快乐回忆！</p>
+  </div>
+ </div>
+ <div class="nav-buttons">
+  <button class="back" id="backBtn" type="button" style="display:none">← 上一步</button>
+  <button class="next" id="nextBtn" type="button" disabled>选好啦，下一步 →</button>
+ </div>
+</section>
+<div class="foot">♡ 今日份快乐，由我们共同签收 ♡</div>
+</main>
+<script>
+const bg=document.getElementById('bg');
+for(let i=0;i<20;i++){let e=document.createElement('span');e.className='bubble';e.textContent=['♡','💗','✦','💕'][i%4];e.style.left=Math.random()*100+'%';e.style.animationDuration=8+Math.random()*11+'s';e.style.animationDelay=-Math.random()*15+'s';bg.appendChild(e)}
+const welcomePage=document.getElementById('welcomePage');
+const mainSections=[...document.querySelectorAll('.wrap > .panel:not(#welcomePage)')];
+mainSections.forEach(s=>s.classList.add('hidden-step'));
+document.querySelector('.top').classList.add('hidden-step');
+document.querySelector('.foot').classList.add('hidden-step');
+document.getElementById('acceptInvite').addEventListener('click',()=>{
+ welcomePage.classList.add('hidden-step');
+ document.querySelector('.top').classList.remove('hidden-step');
+ mainSections.forEach(s=>s.classList.remove('hidden-step'));
+ document.querySelector('.top').scrollIntoView({behavior:'smooth',block:'start'});
+});
+document.getElementById('maybeLater').addEventListener('click',()=>{
+ document.getElementById('welcomeTip').textContent='偷偷告诉你：里面有好玩的活动，还有一份专属约会计划！🥰';
+});
+let selected='';
+let chosenDay='', chosenTime='', currentPage=0;
+const pages=[...document.querySelectorAll('.wizard-page')];
+const nextBtn=document.getElementById('nextBtn');
+const backBtn=document.getElementById('backBtn');
+function updateWizard(){
+ pages.forEach((p,i)=>p.classList.toggle('active',i===currentPage));
+ document.getElementById('stepLabel').textContent='第 '+(currentPage+1)+' / 4 站';
+ document.getElementById('progress').style.width=((currentPage+1)*25)+'%';
+ backBtn.style.display=currentPage===0?'none':'block';
+ nextBtn.textContent=currentPage===3?'完成啦 💗':'选好啦，下一步 →';
+ nextBtn.disabled=(currentPage===0&&!chosenDay)||(currentPage===1&&!chosenTime)||(currentPage===2&&!document.getElementById('place').value.trim());
+ if(currentPage===3){nextBtn.style.display='none';backBtn.textContent='← 修改计划';}
+ else{nextBtn.style.display='block';backBtn.textContent='← 上一步';}
+}
+document.querySelectorAll('#weekdayChoices .pick').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('#weekdayChoices .pick').forEach(x=>x.classList.remove('selected'));
+ btn.classList.add('selected');chosenDay=btn.dataset.value;updateWizard();
+}));
+document.querySelectorAll('#timeChoices .time-pick').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('#timeChoices .time-pick').forEach(x=>x.classList.remove('selected'));
+ btn.classList.add('selected');chosenTime=btn.dataset.value;updateWizard();
+}));
+document.getElementById('place').addEventListener('input',updateWizard);
+nextBtn.addEventListener('click',()=>{
+ if(currentPage===2){
+  const place=document.getElementById('place').value.trim();
+  if(!place){alert('填一下集合地点吧～');return}
+  const activity=selected||'一起出去玩';
+  document.getElementById('summary').innerHTML='约会项目：<b>'+activity+'</b><br>约会日期：<b>'+chosenDay+'</b><br>约会时间：<b>'+chosenTime+'</b><br>集合地点：<b>'+place+'</b>';
+ }
+ if(currentPage<3){currentPage++;updateWizard();}
+});
+backBtn.addEventListener('click',()=>{if(currentPage>0){currentPage--;updateWizard();}});
+updateWizard();
+</script>
+</body>
+</html>
