@@ -257,6 +257,44 @@ async function sendDatePlan(){
 }
 submitBtn.addEventListener('click', sendDatePlan);
 
+ 
+// ===============================
+// 约会邀请网页自动记录访客
+// ===============================
+
+async function recordDateVisit() {
+  try {
+    const response = await fetch(
+      'https://significant-pelican-d3bx1b552074-1543155648.ap-shanghai.app.tcloudbase.com/submit',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'careVisit',
+          page: 'index.html'
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      console.error('约会网页访客记录失败：', result.message);
+      return;
+    }
+
+    console.log('约会网页访客记录成功');
+
+  } catch (error) {
+    console.error('约会网页访客记录请求失败：', error);
+  }
+}
+
+// 页面加载时自动记录
+recordDateVisit();
+
 updateWizard();
 </script>
 </body>
