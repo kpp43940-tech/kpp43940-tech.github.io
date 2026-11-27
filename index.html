@@ -137,8 +137,8 @@ button:focus-visible{outline:3px solid #d94f89;outline-offset:3px}
 <div class="foot">♡ 今日份快乐，由我们共同签收 ♡</div>
 </main>
 <script>
-// 第一步：部署 Google Apps Script 后，把 Web App URL 粘贴到下面引号内
-const SUBMIT_API_URL = 'https://script.google.com/macros/s/AKfycbxqKTlJdP6fSgygAj4JIgXSkk0bBQxaKxCsox67-Vmg_XgTg5WjlXS4hu4bL7f7gCqovA/exec';
+// 部署腾讯云 CloudBase 云函数并配置 HTTP 访问后，把接口地址粘贴到这里
+const SUBMIT_API_URL = 'https://significant-pelican-d3bx1b552074-1543155648.ap-shanghai.app.tcloudbase.com/submit';
 
 const bg=document.getElementById('bg');
 for(let i=0;i<20;i++){let e=document.createElement('span');e.className='bubble';e.textContent=['♡','💗','✦','💕'][i%4];e.style.left=Math.random()*100+'%';e.style.animationDuration=8+Math.random()*11+'s';e.style.animationDelay=-Math.random()*15+'s';bg.appendChild(e)}
@@ -201,10 +201,10 @@ const submitBtn = document.getElementById('submitBtn');
 const submitStatus = document.getElementById('submitStatus');
 let activeSubmitNonce = '';
 
-function sendDatePlan(){
+async function sendDatePlan(){
  const endpoint = SUBMIT_API_URL.trim();
- if(!endpoint || endpoint.includes('请在这里')){
-  submitStatus.textContent = '还差最后一步：网站管理员需要先配置提交接口。';
+ if(!endpoint || endpoint.includes('请填写')){
+  submitStatus.textContent = '还差最后一步：管理员需要先配置 CloudBase 提交接口。';
   return;
  }
  const place = document.getElementById('place').value.trim();
@@ -223,60 +223,37 @@ function sendDatePlan(){
  activeSubmitNonce = payload.nonce;
  submitBtn.disabled = true;
  submitBtn.textContent = '正在发送… 💗';
- submitStatus.textContent = '正在把约会计划送出去，请稍等～';
-
- const iframe = document.createElement('iframe');
- iframe.name = 'dateSubmitFrame';
- iframe.style.display = 'none';
- iframe.setAttribute('aria-hidden','true');
- document.body.appendChild(iframe);
-
- const form = document.createElement('form');
- form.method = 'POST';
- form.action = endpoint;
- form.target = iframe.name;
- form.style.display = 'none';
- const field = document.createElement('input');
- field.type = 'hidden';
- field.name = 'payload';
- field.value = JSON.stringify(payload);
- form.appendChild(field);
- document.body.appendChild(form);
-
- const cleanup = () => {
-  form.remove();
-  iframe.remove();
- };
- const onMessage = (event) => {
-  const data = event.data || {};
-  if(data.nonce !== activeSubmitNonce) return;
-  if(data.type === 'DATE_SUBMIT_OK'){
-   submitBtn.textContent = '已成功发送 💖';
-   submitStatus.textContent = '发送成功！邀请你的人已经收到约会计划啦～';
+ submitStatus.textContent = '正在保存约会计划并发送通知，请稍等～';
+ try {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
+  const response = await fetch(endpoint, {
+   method: 'POST',
+   headers: {'Content-Type':'application/json'},
+   body: JSON.stringify(payload),
+   mode: 'cors',
+   signal: controller.signal
+  });
+  clearTimeout(timeoutId);
+  let data;
+  try { data = await response.json(); }
+  catch (_) { throw new Error('服务器返回内容无法识别，请检查 CloudBase 接口配置。'); }
+  if(!response.ok || !data.ok) throw new Error(data.message || '提交失败，请稍后重试。');
+  submitBtn.textContent = '已成功提交 💖';
+  submitBtn.disabled = true;
+  if(data.mailSent === false){
+   submitStatus.textContent = data.duplicate ? '这份约会选择之前已经提交过啦。' : '约会计划已保存到后台，但邮件通知未成功发送。';
+   submitStatus.style.color = '#d18a35';
+  }else{
+   submitStatus.textContent = '发送成功！约会计划已保存，邀请你的人也会收到邮件啦～';
    submitStatus.style.color = '#26945b';
-   window.removeEventListener('message', onMessage);
-   cleanup();
-  }else if(data.type === 'DATE_SUBMIT_ERROR'){
-   submitBtn.disabled = false;
-   submitBtn.textContent = '💌 重新发送我的选择';
-   submitStatus.textContent = data.message || '发送失败，请稍后重试。';
-   submitStatus.style.color = '#d34b72';
-   window.removeEventListener('message', onMessage);
-   cleanup();
   }
- };
- window.addEventListener('message', onMessage);
- form.submit();
- setTimeout(() => {
-  if(submitBtn.disabled && submitBtn.textContent === '正在发送… 💗'){
-   submitBtn.disabled = false;
-   submitBtn.textContent = '💌 重新发送我的选择';
-   submitStatus.textContent = '暂时没有收到服务器确认。请检查网络或稍后重试。';
-   submitStatus.style.color = '#d34b72';
-   window.removeEventListener('message', onMessage);
-   cleanup();
-  }
- }, 20000);
+ } catch(err){
+  submitBtn.disabled = false;
+  submitBtn.textContent = '💌 重新发送我的选择';
+  submitStatus.textContent = err.name === 'AbortError' ? '连接超时，请检查网络后重试。' : (err.message || '发送失败，请稍后重试。');
+  submitStatus.style.color = '#d34b72';
+ }
 }
 submitBtn.addEventListener('click', sendDatePlan);
 
