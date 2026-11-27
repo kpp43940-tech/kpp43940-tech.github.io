@@ -5,8 +5,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>约会邀请 - 管理后台</title>
+
 <style>
 * { box-sizing: border-box; }
+
 body {
   margin: 0;
   padding: 24px 14px;
@@ -14,18 +16,29 @@ body {
   background: #fff2f6;
   color: #51434a;
 }
+
 .container {
   max-width: 1000px;
   margin: 30px auto;
 }
+
 .card {
   background: white;
   border-radius: 20px;
   padding: 25px;
   box-shadow: 0 6px 25px rgba(220,120,155,.10);
 }
-h1 { color: #e66c99; text-align: center; }
-.subtitle { text-align: center; color: #999; }
+
+h1 {
+  color: #e66c99;
+  text-align: center;
+}
+
+.subtitle {
+  text-align: center;
+  color: #999;
+}
+
 input {
   width: 100%;
   padding: 13px;
@@ -34,6 +47,7 @@ input {
   border-radius: 10px;
   font-size: 15px;
 }
+
 button {
   border: none;
   border-radius: 10px;
@@ -43,12 +57,25 @@ button {
   cursor: pointer;
   font-size: 14px;
 }
+
 button:hover { background: #df6c96; }
-button:disabled { opacity: .6; cursor: wait; }
+
+button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
 .secondary { background: #aaa; }
 .danger { background: #e66b75; }
-#loginPage { max-width: 420px; margin: 80px auto; }
+.success { background: #65b98a; }
+
+#loginPage {
+  max-width: 420px;
+  margin: 80px auto;
+}
+
 #dashboard { display: none; }
+
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -56,73 +83,227 @@ button:disabled { opacity: .6; cursor: wait; }
   flex-wrap: wrap;
   gap: 12px;
 }
+
 .stat {
   background: #fff2f6;
   padding: 17px;
   border-radius: 14px;
   margin: 18px 0;
 }
-.stat strong { color: #e66c99; font-size: 28px; }
+
+.stat strong {
+  color: #e66c99;
+  font-size: 28px;
+}
+
 .table-wrap { overflow-x: auto; }
+
 table {
   width: 100%;
   border-collapse: collapse;
   min-width: 650px;
 }
+
 th, td {
   padding: 13px 10px;
   border-bottom: 1px solid #f5e6ec;
   text-align: left;
   font-size: 14px;
 }
-th { color: #d56d91; background: #fff7fa; }
+
+th {
+  color: #d56d91;
+  background: #fff7fa;
+}
+
 td { word-break: break-word; }
-.message { text-align: center; color: #999; padding: 25px; }
-.status { color: #df7098; min-height: 22px; }
+
+.message {
+  text-align: center;
+  color: #999;
+  padding: 25px;
+}
+
+.status {
+  text-align: center;
+  color: #999;
+  min-height: 22px;
+}
+
+/* 提交开关区域 */
+.switch-card {
+  background: #fff7fa;
+  border: 1px solid #f7dce6;
+  border-radius: 15px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.switch-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #d56d91;
+  margin-bottom: 12px;
+}
+
+.switch-status {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 12px 0;
+}
+
+.switch-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.switch-tip {
+  color: #999;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
 @media(max-width:600px) {
   .card { padding: 18px; }
   .container { margin-top: 10px; }
+
+  .toolbar {
+    align-items: flex-start;
+  }
+
+  .switch-buttons button {
+    flex: 1;
+  }
 }
 </style>
 </head>
+
 <body>
 
+<!-- 管理员登录页面 -->
 <div id="loginPage" class="card">
+
   <h1>💕 管理员登录</h1>
   <p class="subtitle">约会邀请管理中心</p>
 
-  <input id="username" placeholder="管理员账号" autocomplete="username">
-  <input id="password" type="password" placeholder="管理员密码" autocomplete="current-password">
+  <input
+    id="username"
+    placeholder="管理员账号"
+    autocomplete="username"
+  >
 
-  <button id="loginBtn" style="width:100%;margin-top:12px" onclick="login()">
+  <input
+    id="password"
+    type="password"
+    placeholder="管理员密码"
+    autocomplete="current-password"
+  >
+
+  <button
+    id="loginBtn"
+    style="width:100%;margin-top:12px"
+    onclick="login()"
+  >
     登录后台
   </button>
+
   <p id="loginStatus" class="status"></p>
 </div>
 
+
+<!-- 管理后台 -->
 <div id="dashboard" class="container">
+
   <div class="card">
+
     <div class="toolbar">
       <div>
-        <h1 style="text-align:left;margin-bottom:5px">💕 约会管理后台</h1>
+        <h1 style="text-align:left;margin-bottom:5px">
+          💕 约会管理后台
+        </h1>
         <span style="color:#999">欢迎回来，管理员</span>
       </div>
+
       <div>
-        <button onclick="loadRecords()">刷新记录</button>
+        <button onclick="refreshDashboard()">刷新记录</button>
         <button class="secondary" onclick="logout()">退出登录</button>
       </div>
     </div>
 
+
+    <!-- 约会提交开关 -->
+    <div class="switch-card">
+
+      <div class="switch-title">
+        ⚙️ 约会邀请提交管理
+      </div>
+
+      <div id="submissionStatus" class="switch-status">
+        正在读取提交状态...
+      </div>
+
+      <div class="switch-buttons">
+
+        <button
+          id="enableBtn"
+          class="success"
+          onclick="changeSubmissionStatus(true)"
+          disabled
+        >
+          开启提交
+        </button>
+
+        <button
+          id="disableBtn"
+          class="danger"
+          onclick="changeSubmissionStatus(false)"
+          disabled
+        >
+          关闭提交
+        </button>
+
+        <button
+          id="refreshStatusBtn"
+          class="secondary"
+          onclick="loadSubmissionStatus()"
+        >
+          刷新状态
+        </button>
+
+      </div>
+
+      <p id="switchMessage" class="switch-tip">
+        正在连接服务器...
+      </p>
+
+      <p class="switch-tip">
+        开启后，访客可以正常提交约会邀请。
+        关闭后，访客将无法提交新的约会邀请。
+      </p>
+
+    </div>
+
+
+    <!-- 记录数量 -->
     <div class="stat">
       <div>当前显示记录数量（最多100条）</div>
       <strong id="total">0</strong>
     </div>
 
+
+    <!-- 约会记录 -->
     <h3>📋 约会提交记录</h3>
-    <div id="recordStatus" class="message">正在加载...</div>
+
+    <div id="recordStatus" class="message">
+      正在加载...
+    </div>
 
     <div class="table-wrap">
+
       <table id="recordTable" style="display:none">
+
         <thead>
           <tr>
             <th>编号</th>
@@ -134,18 +315,29 @@ td { word-break: break-word; }
             <th>操作</th>
           </tr>
         </thead>
+
         <tbody id="recordBody"></tbody>
+
       </table>
+
     </div>
+
   </div>
 </div>
 
+
 <script>
+
 const API_URL =
   'https://significant-pelican-d3bx1b552074-1543155648.ap-shanghai.app.tcloudbase.com/submit';
 
 let token = sessionStorage.getItem('adminToken') || '';
 
+let submissionEnabled = null;
+let changingStatus = false;
+
+
+// HTML安全转义
 function escapeHTML(value) {
   return String(value ?? '').replace(/[&<>"']/g, char => ({
     '&': '&amp;',
@@ -156,10 +348,15 @@ function escapeHTML(value) {
   })[char]);
 }
 
+
+// 统一请求函数
 async function request(data) {
+
   const response = await fetch(API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify(data)
   });
 
@@ -172,11 +369,37 @@ async function request(data) {
   return result;
 }
 
+
+// 判断登录是否过期
+function handleAuthError(error) {
+
+  if (
+    error.message.includes('登录已过期') ||
+    error.message.includes('登录已失效')
+  ) {
+    alert('登录已过期，请重新登录');
+    logout();
+    return true;
+  }
+
+  return false;
+}
+
+
+// 管理员登录
 async function login() {
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value;
-  const status = document.getElementById('loginStatus');
-  const button = document.getElementById('loginBtn');
+
+  const username =
+    document.getElementById('username').value.trim();
+
+  const password =
+    document.getElementById('password').value;
+
+  const status =
+    document.getElementById('loginStatus');
+
+  const button =
+    document.getElementById('loginBtn');
 
   if (!username || !password) {
     status.textContent = '请输入账号和密码';
@@ -187,6 +410,7 @@ async function login() {
   status.textContent = '正在验证...';
 
   try {
+
     const result = await request({
       action: 'adminLogin',
       username,
@@ -194,30 +418,50 @@ async function login() {
     });
 
     token = result.token;
+
     sessionStorage.setItem('adminToken', token);
 
     document.getElementById('loginPage').style.display = 'none';
+
     document.getElementById('dashboard').style.display = 'block';
 
     document.getElementById('password').value = '';
-    await loadRecords();
+
+    await Promise.all([
+      loadRecords(),
+      loadSubmissionStatus()
+    ]);
 
   } catch (error) {
+
     status.textContent = error.message;
+
   } finally {
+
     button.disabled = false;
+
   }
 }
 
+
+// 加载约会记录
 async function loadRecords() {
-  const status = document.getElementById('recordStatus');
-  const table = document.getElementById('recordTable');
-  const body = document.getElementById('recordBody');
+
+  const status =
+    document.getElementById('recordStatus');
+
+  const table =
+    document.getElementById('recordTable');
+
+  const body =
+    document.getElementById('recordBody');
 
   status.textContent = '正在加载记录...';
+
   table.style.display = 'none';
 
   try {
+
     const result = await request({
       action: 'adminList',
       token
@@ -225,10 +469,15 @@ async function loadRecords() {
 
     const records = result.records || [];
 
-    document.getElementById('total').textContent = records.length;
+    document.getElementById('total').textContent =
+      records.length;
 
     if (records.length === 0) {
+
       status.textContent = '目前还没有提交记录';
+
+      body.innerHTML = '';
+
       return;
     }
 
@@ -241,7 +490,10 @@ async function loadRecords() {
         <td>${escapeHTML(record.place)}</td>
         <td>${escapeHTML(formatDate(record.submitted_at))}</td>
         <td>
-          <button class="danger" onclick="deleteRecord(${Number(record.id)})">
+          <button
+            class="danger"
+            onclick="deleteRecord(${Number(record.id)})"
+          >
             删除
           </button>
         </td>
@@ -249,33 +501,208 @@ async function loadRecords() {
     `).join('');
 
     status.textContent = '';
+
     table.style.display = 'table';
 
   } catch (error) {
+
     status.textContent = error.message;
 
-    if (error.message.includes('登录已失效')) {
-      logout();
-    }
+    handleAuthError(error);
+
   }
 }
 
+
+// 格式化时间
 function formatDate(value) {
+
   if (!value) return '—';
 
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) return value;
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
 
   return date.toLocaleString('zh-CN');
 }
 
+
+// 更新开关显示
+function updateSubmissionDisplay() {
+
+  const status =
+    document.getElementById('submissionStatus');
+
+  const enableBtn =
+    document.getElementById('enableBtn');
+
+  const disableBtn =
+    document.getElementById('disableBtn');
+
+  if (submissionEnabled === null) {
+
+    status.textContent = '暂时无法读取提交状态';
+
+    enableBtn.disabled = true;
+    disableBtn.disabled = true;
+
+    return;
+  }
+
+  if (submissionEnabled) {
+
+    status.textContent = '🟢 当前状态：允许提交';
+
+    enableBtn.disabled = true;
+    disableBtn.disabled = changingStatus;
+
+  } else {
+
+    status.textContent = '🔴 当前状态：已关闭提交';
+
+    enableBtn.disabled = changingStatus;
+    disableBtn.disabled = true;
+
+  }
+
+  if (changingStatus) {
+    enableBtn.disabled = true;
+    disableBtn.disabled = true;
+  }
+}
+
+
+// 读取提交开关状态
+async function loadSubmissionStatus() {
+
+  const message =
+    document.getElementById('switchMessage');
+
+  const refreshBtn =
+    document.getElementById('refreshStatusBtn');
+
+  refreshBtn.disabled = true;
+
+  message.textContent = '正在读取数据库状态...';
+
+  try {
+
+    const result = await request({
+      action: 'adminGetStatus',
+      token
+    });
+
+    submissionEnabled = result.enabled;
+
+    updateSubmissionDisplay();
+
+    message.textContent = '已成功读取最新状态';
+
+  } catch (error) {
+
+    submissionEnabled = null;
+
+    updateSubmissionDisplay();
+
+    message.textContent = '读取失败：' + error.message;
+
+    handleAuthError(error);
+
+  } finally {
+
+    refreshBtn.disabled = false;
+
+  }
+}
+
+
+// 开启或关闭提交
+async function changeSubmissionStatus(enabled) {
+
+  if (changingStatus) return;
+
+  if (enabled === submissionEnabled) return;
+
+  const confirmMessage = enabled
+    ? '确定开启约会邀请提交吗？'
+    : '确定关闭约会邀请提交吗？关闭后访客将无法提交新的邀请。';
+
+  if (!confirm(confirmMessage)) {
+    return;
+  }
+
+  changingStatus = true;
+
+  const message =
+    document.getElementById('switchMessage');
+
+  const enableBtn =
+    document.getElementById('enableBtn');
+
+  const disableBtn =
+    document.getElementById('disableBtn');
+
+  enableBtn.disabled = true;
+  disableBtn.disabled = true;
+
+  message.textContent = '正在修改提交状态...';
+
+  try {
+
+    const result = await request({
+      action: 'adminSetStatus',
+      token,
+      enabled
+    });
+
+    submissionEnabled = result.enabled;
+
+    updateSubmissionDisplay();
+
+    message.textContent = result.message;
+
+    alert(result.message);
+
+  } catch (error) {
+
+    message.textContent = '修改失败：' + error.message;
+
+    alert(error.message);
+
+    handleAuthError(error);
+
+  } finally {
+
+    changingStatus = false;
+
+    updateSubmissionDisplay();
+
+  }
+}
+
+
+// 刷新记录和开关状态
+async function refreshDashboard() {
+
+  await Promise.all([
+    loadRecords(),
+    loadSubmissionStatus()
+  ]);
+
+}
+
+
+// 删除记录
 async function deleteRecord(id) {
+
   if (!confirm('确定删除这条约会记录吗？删除后无法恢复。')) {
     return;
   }
 
   try {
+
     const result = await request({
       action: 'adminDelete',
       token,
@@ -283,34 +710,62 @@ async function deleteRecord(id) {
     });
 
     alert(result.message);
+
     await loadRecords();
 
   } catch (error) {
+
     alert(error.message);
 
-    if (error.message.includes('登录已失效')) {
-      logout();
-    }
+    handleAuthError(error);
+
   }
 }
 
+
+// 退出登录
 function logout() {
+
   sessionStorage.removeItem('adminToken');
+
   token = '';
 
+  submissionEnabled = null;
+
   document.getElementById('dashboard').style.display = 'none';
+
   document.getElementById('loginPage').style.display = 'block';
+
   document.getElementById('username').value = '';
+
   document.getElementById('password').value = '';
+
   document.getElementById('loginStatus').textContent = '';
+
+  document.getElementById('switchMessage').textContent = '';
+
+  document.getElementById('submissionStatus').textContent =
+    '尚未读取状态';
+
+  document.getElementById('total').textContent = '0';
+
 }
 
-// 页面刷新后，如果当前标签页还有有效令牌，尝试恢复登录
+
+// 页面刷新后恢复登录
 if (token) {
+
   document.getElementById('loginPage').style.display = 'none';
+
   document.getElementById('dashboard').style.display = 'block';
-  loadRecords();
+
+  Promise.all([
+    loadRecords(),
+    loadSubmissionStatus()
+  ]);
+
 }
+
 </script>
 
 </body>
