@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>约会邀请 - 管理后台</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px 14px;
+  font-family: Arial, "Microsoft YaHei", sans-serif;
+  background: #fff2f6;
+  color: #51434a;
+}
+.container {
+  max-width: 1000px;
+  margin: 30px auto;
+}
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 6px 25px rgba(220,120,155,.10);
+}
+h1 { color: #e66c99; text-align: center; }
+.subtitle { text-align: center; color: #999; }
+input {
+  width: 100%;
+  padding: 13px;
+  margin: 9px 0;
+  border: 1px solid #f1cbd9;
+  border-radius: 10px;
+  font-size: 15px;
+}
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 11px 18px;
+  background: #ed83a8;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+button:hover { background: #df6c96; }
+button:disabled { opacity: .6; cursor: wait; }
+.secondary { background: #aaa; }
+.danger { background: #e66b75; }
+#loginPage { max-width: 420px; margin: 80px auto; }
+#dashboard { display: none; }
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.stat {
+  background: #fff2f6;
+  padding: 17px;
+  border-radius: 14px;
+  margin: 18px 0;
+}
+.stat strong { color: #e66c99; font-size: 28px; }
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+}
+th, td {
+  padding: 13px 10px;
+  border-bottom: 1px solid #f5e6ec;
+  text-align: left;
+  font-size: 14px;
+}
+th { color: #d56d91; background: #fff7fa; }
+td { word-break: break-word; }
+.message { text-align: center; color: #999; padding: 25px; }
+.status { color: #df7098; min-height: 22px; }
+@media(max-width:600px) {
+  .card { padding: 18px; }
+  .container { margin-top: 10px; }
+}
+</style>
+</head>
+<body>
+
+<div id="loginPage" class="card">
+  <h1>💌 管理员登录</h1>
+  <p class="subtitle">约会邀请管理中心</p>
+
+  <input id="username" placeholder="管理员账号" autocomplete="username">
+  <input id="password" type="password" placeholder="管理员密码" autocomplete="current-password">
+
+  <button id="loginBtn" style="width:100%;margin-top:12px" onclick="login()">
+    登录后台
+  </button>
+  <p id="loginStatus" class="status"></p>
+</div>
+
+<div id="dashboard" class="container">
+  <div class="card">
+    <div class="toolbar">
+      <div>
+        <h1 style="text-align:left;margin-bottom:5px">💌 约会管理后台</h1>
+        <span style="color:#999">欢迎回来，管理员</span>
+      </div>
+      <div>
+        <button onclick="loadRecords()">刷新记录</button>
+        <button class="secondary" onclick="logout()">退出登录</button>
+      </div>
+    </div>
+
+    <div class="stat">
+      <div>当前显示记录数量（最多100条）</div>
+      <strong id="total">0</strong>
+    </div>
+
+    <h3>📋 约会提交记录</h3>
+    <div id="recordStatus" class="message">正在加载...</div>
+
+    <div class="table-wrap">
+      <table id="recordTable" style="display:none">
+        <thead>
+          <tr>
+            <th>编号</th>
+            <th>活动</th>
+            <th>日期</th>
+            <th>时间</th>
+            <th>地点</th>
+            <th>提交时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="recordBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL =
+  'https://significant-pelican-d3bx1b552074-1543155648.ap-shanghai.app.tcloudbase.com/submit';
+
+let token = sessionStorage.getItem('adminToken') || '';
+
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[char]);
+}
+
+async function request(data) {
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || '请求失败');
+  }
+
+  return result;
+}
+
+async function login() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const status = document.getElementById('loginStatus');
+  const button = document.getElementById('loginBtn');
+
+  if (!username || !password) {
+    status.textContent = '请输入账号和密码';
+    return;
+  }
+
+  button.disabled = true;
+  status.textContent = '正在验证...';
+
+  try {
+    const result = await request({
+      action: 'adminLogin',
+      username,
+      password
+    });
+
+    token = result.token;
+    sessionStorage.setItem('adminToken', token);
+
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+
+    document.getElementById('password').value = '';
+    await loadRecords();
+
+  } catch (error) {
+    status.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function loadRecords() {
+  const status = document.getElementById('recordStatus');
+  const table = document.getElementById('recordTable');
+  const body = document.getElementById('recordBody');
+
+  status.textContent = '正在加载记录...';
+  table.style.display = 'none';
+
+  try {
+    const result = await request({
+      action: 'adminList',
+      token
+    });
+
+    const records = result.records || [];
+
+    document.getElementById('total').textContent = records.length;
+
+    if (records.length === 0) {
+      status.textContent = '目前还没有提交记录';
+      return;
+    }
+
+    body.innerHTML = records.map(record => `
+      <tr>
+        <td>${escapeHTML(record.id)}</td>
+        <td>${escapeHTML(record.activity)}</td>
+        <td>${escapeHTML(record.day)}</td>
+        <td>${escapeHTML(record.time)}</td>
+        <td>${escapeHTML(record.place)}</td>
+        <td>${escapeHTML(formatDate(record.submitted_at))}</td>
+        <td>
+          <button class="danger" onclick="deleteRecord(${Number(record.id)})">
+            删除
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+    status.textContent = '';
+    table.style.display = 'table';
+
+  } catch (error) {
+    status.textContent = error.message;
+
+    if (error.message.includes('登录已失效')) {
+      logout();
+    }
+  }
+}
+
+function formatDate(value) {
+  if (!value) return '—';
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleString('zh-CN');
+}
+
+async function deleteRecord(id) {
+  if (!confirm('确定删除这条约会记录吗？删除后无法恢复。')) {
+    return;
+  }
+
+  try {
+    const result = await request({
+      action: 'adminDelete',
+      token,
+      id
+    });
+
+    alert(result.message);
+    await loadRecords();
+
+  } catch (error) {
+    alert(error.message);
+
+    if (error.message.includes('登录已失效')) {
+      logout();
+    }
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('adminToken');
+  token = '';
+
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'block';
+  document.getElementById('username').value = '';
+  document.getElementById('password').value = '';
+}
+
+// 页面打开自动检测是否已有登录凭证
+window.onload = async function(){
+  if(token){
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    await loadRecords();
+  }
+}
+</script>
+</body>
+</html>
