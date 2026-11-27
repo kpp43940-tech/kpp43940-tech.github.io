@@ -70,25 +70,25 @@ button:focus-visible{outline:3px solid #d94f89;outline-offset:3px}
   <p id="welcomeTip" style="font-size:12px;color:#c1849e;min-height:18px;margin:12px 0 0"></p>
  </div>
 </section>
-<section class="panel">
- <p class="heading">🎡 第一步：想去哪里玩？</p>
- <p class="hint">点一点，选一个你最感兴趣的，也可以之后再商量～</p>
- <div class="cards" id="cards">
-  <button class="choice" data-name="电影院"><span class="emoji">🎬</span><b>电影院</b><small>电影 + 爆米花</small></button>
-  <button class="choice" data-name="运动馆"><span class="emoji">🏸</span><b>运动馆</b><small>羽毛球 / 保龄球 / 桌球</small></button>
-  <button class="choice" data-name="逛街探店"><span class="emoji">🛍️</span><b>逛街探店</b><small>边逛边发现好吃的</small></button>
-  <button class="choice" data-name="电玩城"><span class="emoji">🕹️</span><b>电玩城</b><small>抓娃娃 / 双人游戏</small></button>
-  <button class="choice" data-name="DIY手工"><span class="emoji">🎨</span><b>DIY手工</b><small>陶艺 / 手作 / 一起画画</small></button>
-  <button class="choice" data-name="桌游馆"><span class="emoji">🎲</span><b>桌游馆</b><small>合作闯关 / 欢乐对决</small></button>
-  <button class="choice" data-name="水族馆或动物园"><span class="emoji">🐠</span><b>水族馆 / 动物园</b><small>看可爱的小动物</small></button>
-  <button class="choice" data-name="公园散步野餐"><span class="emoji">🧺</span><b>公园散步 / 野餐</b><small>晒太阳、拍照片、聊天</small></button>
-  <button class="choice" data-name="密室逃脱"><span class="emoji">🗝️</span><b>密室逃脱</b><small>一起动脑破解谜题</small></button>
-  <button class="choice" data-name="吃美食甜品"><span class="emoji">🍰</span><b>美食甜品</b><small>火锅 / 甜品 / 咖啡店</small></button>
- </div>
-</section>
 <section class="panel" id="wizard">
- <div class="stepbar"><span id="stepLabel">第 1 / 4 站</span><div class="track"><i id="progress"></i></div></div>
- <div class="wizard-page active" data-page="0">
+ <div class="stepbar"><span id="stepLabel">第 1 / 5 站</span><div class="track"><i id="progress"></i></div></div>
+  <div class="wizard-page active" data-page="0">
+  <p class="heading">🎡 第一步：想去哪里玩？</p>
+  <p class="hint">选一个你最感兴趣的活动吧，也可以之后再商量～</p>
+  <div class="cards" id="cards">
+   <button class="choice" data-name="电影院"><span class="emoji">🎬</span><b>电影院</b><small>电影 + 爆米花</small></button>
+   <button class="choice" data-name="运动馆"><span class="emoji">🏸</span><b>运动馆</b><small>羽毛球 / 保龄球 / 桌球</small></button>
+   <button class="choice" data-name="逛街探店"><span class="emoji">🛍️</span><b>逛街探店</b><small>边逛边发现好吃的</small></button>
+   <button class="choice" data-name="电玩城"><span class="emoji">🕹️</span><b>电玩城</b><small>抓娃娃 / 双人游戏</small></button>
+   <button class="choice" data-name="DIY手工"><span class="emoji">🎨</span><b>DIY手工</b><small>陶艺 / 手作 / 一起画画</small></button>
+   <button class="choice" data-name="桌游馆"><span class="emoji">🎲</span><b>桌游馆</b><small>合作闯关 / 欢乐对决</small></button>
+   <button class="choice" data-name="水族馆或动物园"><span class="emoji">🐠</span><b>水族馆 / 动物园</b><small>看可爱的小动物</small></button>
+   <button class="choice" data-name="公园散步野餐"><span class="emoji">🧺</span><b>公园散步 / 野餐</b><small>晒太阳、拍照片、聊天</small></button>
+   <button class="choice" data-name="密室逃脱"><span class="emoji">🗝️</span><b>密室逃脱</b><small>一起动脑破解谜题</small></button>
+   <button class="choice" data-name="吃美食甜品"><span class="emoji">🍰</span><b>美食甜品</b><small>火锅 / 甜品 / 咖啡店</small></button>
+  </div>
+ </div>
+ <div class="wizard-page" data-page="1">
   <p class="heading">🗓️ 第二步：哪一天出发？</p>
   <p class="hint">选一个你方便的日子吧～</p>
   <div class="pick-grid" id="weekdayChoices">
@@ -101,7 +101,7 @@ button:focus-visible{outline:3px solid #d94f89;outline-offset:3px}
    <button class="pick" data-value="周日">☀️<b>周日</b><small>星期日</small></button>
   </div>
  </div>
- <div class="wizard-page" data-page="1">
+ <div class="wizard-page" data-page="2">
   <p class="heading">⏰ 第三步：想几点见面？</p>
   <p class="hint">选一个舒服的时间段，慢慢享受约会～</p>
   <div class="time-grid" id="timeChoices">
@@ -110,12 +110,12 @@ button:focus-visible{outline:3px solid #d94f89;outline-offset:3px}
    <button class="time-pick" data-value="晚上"><span>🌙</span><b>晚上</b><small>夜晚也要有小浪漫</small></button>
   </div>
  </div>
- <div class="wizard-page" data-page="2">
+ <div class="wizard-page" data-page="3">
   <p class="heading">📍 第四步：在哪里集合？</p>
   <p class="hint">写一个方便见面的地点就好啦！</p>
   <div class="field"><label for="place">💗 集合地点 / 具体地址</label><input id="place" type="text" placeholder="例如：商场一楼大门口"></div>
  </div>
- <div class="wizard-page" data-page="3">
+ <div class="wizard-page" data-page="4">
   <p class="heading">💌 约会邀请准备好啦！</p>
   <p class="hint">检查一下我们的快乐计划～</p>
   <div class="result show" id="result" style="display:block;margin-top:8px">
@@ -156,14 +156,20 @@ const nextBtn=document.getElementById('nextBtn');
 const backBtn=document.getElementById('backBtn');
 function updateWizard(){
  pages.forEach((p,i)=>p.classList.toggle('active',i===currentPage));
- document.getElementById('stepLabel').textContent='第 '+(currentPage+1)+' / 4 站';
- document.getElementById('progress').style.width=((currentPage+1)*25)+'%';
+ document.getElementById('stepLabel').textContent='第 '+(currentPage+1)+' / 5 站';
+ document.getElementById('progress').style.width=((currentPage+1)*20)+'%';
  backBtn.style.display=currentPage===0?'none':'block';
- nextBtn.textContent=currentPage===3?'完成啦 💗':'选好啦，下一步 →';
- nextBtn.disabled=(currentPage===0&&!chosenDay)||(currentPage===1&&!chosenTime)||(currentPage===2&&!document.getElementById('place').value.trim());
- if(currentPage===3){nextBtn.style.display='none';backBtn.textContent='← 修改计划';}
+ nextBtn.textContent=currentPage===4?'完成啦 💗':'选好啦，下一步 →';
+ nextBtn.disabled=(currentPage===0&&!selected)||(currentPage===1&&!chosenDay)||(currentPage===2&&!chosenTime)||(currentPage===3&&!document.getElementById('place').value.trim());
+ if(currentPage===4){nextBtn.style.display='none';backBtn.textContent='← 修改计划';}
  else{nextBtn.style.display='block';backBtn.textContent='← 上一步';}
 }
+document.querySelectorAll('#cards .choice').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('#cards .choice').forEach(x=>x.classList.remove('selected'));
+ btn.classList.add('selected');
+ selected=btn.dataset.name;
+ updateWizard();
+}));
 document.querySelectorAll('#weekdayChoices .pick').forEach(btn=>btn.addEventListener('click',()=>{
  document.querySelectorAll('#weekdayChoices .pick').forEach(x=>x.classList.remove('selected'));
  btn.classList.add('selected');chosenDay=btn.dataset.value;updateWizard();
@@ -174,13 +180,13 @@ document.querySelectorAll('#timeChoices .time-pick').forEach(btn=>btn.addEventLi
 }));
 document.getElementById('place').addEventListener('input',updateWizard);
 nextBtn.addEventListener('click',()=>{
- if(currentPage===2){
+ if(currentPage===3){
   const place=document.getElementById('place').value.trim();
   if(!place){alert('填一下集合地点吧～');return}
   const activity=selected||'一起出去玩';
   document.getElementById('summary').innerHTML='约会项目：<b>'+activity+'</b><br>约会日期：<b>'+chosenDay+'</b><br>约会时间：<b>'+chosenTime+'</b><br>集合地点：<b>'+place+'</b>';
  }
- if(currentPage<3){currentPage++;updateWizard();}
+ if(currentPage<4){currentPage++;updateWizard();}
 });
 backBtn.addEventListener('click',()=>{if(currentPage>0){currentPage--;updateWizard();}});
 updateWizard();
