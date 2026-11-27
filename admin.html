@@ -286,6 +286,58 @@ td { word-break: break-word; }
     </div>
 
 
+<!-- 归家关怀提交开关 -->
+<div class="switch-card">
+
+  <div class="switch-title">
+    🏠 归家关怀回复管理
+  </div>
+
+  <div id="careSubmissionStatus" class="switch-status">
+    正在读取提交状态...
+  </div>
+
+  <div class="switch-buttons">
+
+    <button
+      id="careEnableBtn"
+      class="success"
+      onclick="changeCareSubmissionStatus(true)"
+      disabled
+    >
+      开启回复
+    </button>
+
+    <button
+      id="careDisableBtn"
+      class="danger"
+      onclick="changeCareSubmissionStatus(false)"
+      disabled
+    >
+      关闭回复
+    </button>
+
+    <button
+      id="careRefreshStatusBtn"
+      class="secondary"
+      onclick="loadCareSubmissionStatus()"
+    >
+      刷新状态
+    </button>
+
+  </div>
+
+  <p id="careSwitchMessage" class="switch-tip">
+    正在连接服务器...
+  </p>
+
+  <p class="switch-tip">
+    开启后，朋友可以正常提交归家关怀回复。
+    关闭后，朋友将无法提交新的归家关怀回复。
+  </p>
+
+</div>
+
     <!-- 记录数量 -->
     <div class="stat">
       <div>当前显示记录数量（最多100条）</div>
@@ -365,6 +417,10 @@ let token = sessionStorage.getItem('adminToken') || '';
 
 let submissionEnabled = null;
 let changingStatus = false;
+
+  // 归家关怀提交开关状态
+let careSubmissionEnabled = null;
+let changingCareStatus = false;
 
 
 // HTML安全转义
@@ -792,8 +848,101 @@ async function changeSubmissionStatus(enabled) {
   }
 }
 
+// 更新归家关怀开关显示
+function updateCareSubmissionDisplay() {
+  const status = document.getElementById('careSubmissionStatus');
+  const enableBtn = document.getElementById('careEnableBtn');
+  const disableBtn = document.getElementById('careDisableBtn');
+
+  if (!status || !enableBtn || !disableBtn) return;
+
+  if (careSubmissionEnabled === true) {
+    status.textContent = '🟢 归家关怀回复：已开启';
+  } else if (careSubmissionEnabled === false) {
+    status.textContent = '🔴 归家关怀回复：已关闭';
+  } else {
+    status.textContent = '⚪ 归家关怀回复：状态未知';
+  }
+
+  enableBtn.disabled = changingCareStatus || careSubmissionEnabled === true;
+  disableBtn.disabled = changingCareStatus || careSubmissionEnabled === false;
+}
+
+
+// 读取归家关怀提交开关状态
+async function loadCareSubmissionStatus() {
+  const message = document.getElementById('careSwitchMessage');
+  const refreshBtn = document.getElementById('careRefreshStatusBtn');
+
+  refreshBtn.disabled = true;
+  message.textContent = '正在读取数据库状态...';
+
+  try {
+    const result = await request({
+      action: 'careAdminGetStatus',
+      token
+    });
+
+    careSubmissionEnabled = result.enabled;
+    updateCareSubmissionDisplay();
+    message.textContent = '已成功读取最新状态';
+
+  } catch (error) {
+    careSubmissionEnabled = null;
+    updateCareSubmissionDisplay();
+    message.textContent = '读取失败：' + error.message;
+    handleAuthError(error);
+
+  } finally {
+    refreshBtn.disabled = false;
+  }
+}
+
+
+// 开启或关闭归家关怀回复
+async function changeCareSubmissionStatus(enabled) {
+  if (changingCareStatus) return;
+  if (enabled === careSubmissionEnabled) return;
+
+  const confirmMessage = enabled
+    ? '确定开启归家关怀回复吗？'
+    : '确定关闭归家关怀回复吗？关闭后朋友将无法提交新的回复。';
+
+  if (!confirm(confirmMessage)) return;
+
+  changingCareStatus = true;
+
+  const message = document.getElementById('careSwitchMessage');
+  message.textContent = '正在修改回复状态...';
+
+  updateCareSubmissionDisplay();
+
+  try {
+    const result = await request({
+      action: 'careAdminSetStatus',
+      token,
+      enabled
+    });
+
+    careSubmissionEnabled = result.enabled;
+    updateCareSubmissionDisplay();
+    message.textContent = result.message;
+    alert(result.message);
+
+  } catch (error) {
+    message.textContent = '修改失败：' + error.message;
+    alert(error.message);
+    handleAuthError(error);
+
+  } finally {
+    changingCareStatus = false;
+    updateCareSubmissionDisplay();
+  }
+}
+
 
 // 刷新记录和开关状态
+
 
 async function refreshDashboard() {
 
@@ -802,11 +951,13 @@ async function refreshDashboard() {
     : loadCareRecords();
 
   await Promise.all([
-    recordTask,
-    loadSubmissionStatus()
-  ]);
+  loadRecords(),
+  loadSubmissionStatus(),
+  loadCareSubmissionStatus()
+]);
 
 }
+
 
 
 
@@ -870,6 +1021,8 @@ async function deleteCareRecord(id) {
 
 
 // 退出登录
+
+// 退出登录
 function logout() {
 
   sessionStorage.removeItem('adminToken');
@@ -877,6 +1030,10 @@ function logout() {
   token = '';
 
   submissionEnabled = null;
+  careSubmissionEnabled = null;
+
+  changingStatus = false;
+  changingCareStatus = false;
 
   document.getElementById('dashboard').style.display = 'none';
 
@@ -893,13 +1050,20 @@ function logout() {
   document.getElementById('submissionStatus').textContent =
     '尚未读取状态';
 
+  document.getElementById('careSwitchMessage').textContent = '';
+
+  document.getElementById('careSubmissionStatus').textContent =
+    '尚未读取状态';
+
+  updateSubmissionDisplay();
+  updateCareSubmissionDisplay();
+
   document.getElementById('total').textContent = '0';
 
 }
 
 
 // 页面刷新后恢复登录
-
 if (token) {
 
   document.getElementById('loginPage').style.display = 'none';
@@ -913,10 +1077,12 @@ if (token) {
 
   Promise.all([
     loadRecords(),
-    loadSubmissionStatus()
+    loadSubmissionStatus(),
+    loadCareSubmissionStatus()
   ]);
 
 }
+
 
 
 </script>
