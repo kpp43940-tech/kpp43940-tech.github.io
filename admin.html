@@ -301,6 +301,17 @@ td { word-break: break-word; }
     </div>
 
     <div class="table-wrap">
+      
+<div style="margin: 16px 0;">
+  <button type="button" onclick="switchRecordTab('date')">
+    💌 约会邀请
+  </button>
+
+  <button type="button" onclick="switchRecordTab('care')">
+    🏠 归家关怀回复
+  </button>
+</div>
+
 
       <table id="recordTable" style="display:none">
 
@@ -319,6 +330,25 @@ td { word-break: break-word; }
         <tbody id="recordBody"></tbody>
 
       </table>
+      
+<table id="careTable" style="display:none">
+
+  <thead>
+    <tr>
+      <th>编号</th>
+      <th>抵达情况</th>
+      <th>电量状态</th>
+      <th>想做的事</th>
+      <th>留言</th>
+      <th>提交时间</th>
+      <th>操作</th>
+    </tr>
+  </thead>
+
+  <tbody id="careRecordBody"></tbody>
+
+</table>
+
 
     </div>
 
@@ -515,6 +545,86 @@ async function loadRecords() {
 
 
 // 格式化时间
+  
+// 当前后台记录分类
+let currentRecordTab = 'date';
+
+// 切换记录分类
+function switchRecordTab(type) {
+
+  currentRecordTab = type;
+
+  const dateTable = document.getElementById('recordTable');
+  const careTable = document.getElementById('careTable');
+
+  if (type === 'date') {
+    dateTable.style.display = 'table';
+    careTable.style.display = 'none';
+    loadRecords();
+  } else {
+    dateTable.style.display = 'none';
+    careTable.style.display = 'table';
+    loadCareRecords();
+  }
+
+}
+
+// 读取归家关怀回复
+async function loadCareRecords() {
+
+  const status = document.getElementById('recordStatus');
+  const table = document.getElementById('careTable');
+  const body = document.getElementById('careRecordBody');
+
+  status.textContent = '正在加载关怀回复...';
+  table.style.display = 'none';
+
+  try {
+
+    const result = await request({
+      action: 'careAdminList',
+      token
+    });
+
+    const records = result.records || [];
+
+    if (records.length === 0) {
+      status.textContent = '目前还没有归家关怀回复';
+      body.innerHTML = '';
+      return;
+    }
+
+    body.innerHTML = records.map(record => `
+      <tr>
+        <td>${escapeHTML(record.id)}</td>
+        <td>${escapeHTML(record.arrival)}</td>
+        <td>${escapeHTML(record.feeling)}</td>
+        <td>${escapeHTML(record.activity)}</td>
+        <td>${escapeHTML(record.message)}</td>
+        <td>${escapeHTML(formatDate(record.submitted_at))}</td>
+        <td>
+          <button
+            class="danger"
+            onclick="deleteCareRecord(${Number(record.id)})"
+          >
+            删除
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+    status.textContent = '';
+    table.style.display = 'table';
+
+  } catch (error) {
+
+    status.textContent = error.message;
+    handleAuthError(error);
+
+  }
+}
+
+  
 function formatDate(value) {
 
   if (!value) return '—';
@@ -684,14 +794,20 @@ async function changeSubmissionStatus(enabled) {
 
 
 // 刷新记录和开关状态
+
 async function refreshDashboard() {
 
+  const recordTask = currentRecordTab === 'date'
+    ? loadRecords()
+    : loadCareRecords();
+
   await Promise.all([
-    loadRecords(),
+    recordTask,
     loadSubmissionStatus()
   ]);
 
 }
+
 
 
 // 删除记录
@@ -720,6 +836,36 @@ async function deleteRecord(id) {
     handleAuthError(error);
 
   }
+}
+
+  
+// 删除归家关怀回复
+async function deleteCareRecord(id) {
+
+  if (!confirm('确定删除这条归家关怀回复吗？删除后无法恢复。')) {
+    return;
+  }
+
+  try {
+
+    const result = await request({
+      action: 'careAdminDelete',
+      token,
+      id
+    });
+
+    alert(result.message);
+
+    await loadCareRecords();
+
+  } catch (error) {
+
+    alert(error.message);
+
+    handleAuthError(error);
+
+  }
+
 }
 
 
@@ -753,11 +899,17 @@ function logout() {
 
 
 // 页面刷新后恢复登录
+
 if (token) {
 
   document.getElementById('loginPage').style.display = 'none';
 
   document.getElementById('dashboard').style.display = 'block';
+
+  currentRecordTab = 'date';
+
+  document.getElementById('recordTable').style.display = 'table';
+  document.getElementById('careTable').style.display = 'none';
 
   Promise.all([
     loadRecords(),
@@ -765,6 +917,7 @@ if (token) {
   ]);
 
 }
+
 
 </script>
 
