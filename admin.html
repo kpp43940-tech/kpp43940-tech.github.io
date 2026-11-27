@@ -354,6 +354,7 @@ td { word-break: break-word; }
 
     <div class="table-wrap">
       
+
 <div style="margin: 16px 0;">
   <button type="button" onclick="switchRecordTab('date')">
     💌 约会邀请
@@ -362,7 +363,12 @@ td { word-break: break-word; }
   <button type="button" onclick="switchRecordTab('care')">
     🏠 归家关怀回复
   </button>
+
+  <button type="button" onclick="switchRecordTab('visit')">
+    👀 访客访问记录
+  </button>
 </div>
+
 
 
       <table id="recordTable" style="display:none">
@@ -400,6 +406,26 @@ td { word-break: break-word; }
   <tbody id="careRecordBody"></tbody>
 
 </table>
+
+      
+<!-- 访客访问记录表 -->
+<table id="visitTable" style="display:none">
+
+  <thead>
+    <tr>
+      <th>编号</th>
+      <th>IP 地址</th>
+      <th>设备类型</th>
+      <th>浏览器</th>
+      <th>访问页面</th>
+      <th>访问时间</th>
+    </tr>
+  </thead>
+
+  <tbody id="visitRecordBody"></tbody>
+
+</table>
+
 
 
     </div>
@@ -605,6 +631,7 @@ async function loadRecords() {
 // 当前后台记录分类
 let currentRecordTab = 'date';
 
+
 // 切换记录分类
 function switchRecordTab(type) {
 
@@ -612,15 +639,27 @@ function switchRecordTab(type) {
 
   const dateTable = document.getElementById('recordTable');
   const careTable = document.getElementById('careTable');
+  const visitTable = document.getElementById('visitTable');
+
+  dateTable.style.display = 'none';
+  careTable.style.display = 'none';
+  visitTable.style.display = 'none';
 
   if (type === 'date') {
+
     dateTable.style.display = 'table';
-    careTable.style.display = 'none';
     loadRecords();
-  } else {
-    dateTable.style.display = 'none';
+
+  } else if (type === 'care') {
+
     careTable.style.display = 'table';
     loadCareRecords();
+
+  } else if (type === 'visit') {
+
+    visitTable.style.display = 'table';
+    loadVisitRecords();
+
   }
 
 }
@@ -679,6 +718,55 @@ async function loadCareRecords() {
 
   }
 }
+  
+// 读取访客访问记录
+async function loadVisitRecords() {
+
+  const status = document.getElementById('recordStatus');
+  const table = document.getElementById('visitTable');
+  const body = document.getElementById('visitRecordBody');
+
+  status.textContent = '正在加载访客记录...';
+  table.style.display = 'none';
+
+  try {
+
+    const result = await request({
+      action: 'careAdminVisitList',
+      token
+    });
+
+    const records = result.records || [];
+
+    if (records.length === 0) {
+      status.textContent = '目前还没有访客访问记录';
+      body.innerHTML = '';
+      return;
+    }
+
+    body.innerHTML = records.map(record => `
+      <tr>
+        <td>${escapeHTML(record.id)}</td>
+        <td>${escapeHTML(record.ip_address)}</td>
+        <td>${escapeHTML(record.device_type)}</td>
+        <td>${escapeHTML(record.browser)}</td>
+        <td>${escapeHTML(record.page)}</td>
+        <td>${escapeHTML(formatDate(record.visited_at))}</td>
+      </tr>
+    `).join('');
+
+    status.textContent = '';
+    table.style.display = 'table';
+
+  } catch (error) {
+
+    status.textContent = '访客记录读取失败：' + error.message;
+    handleAuthError(error);
+
+  }
+
+}
+
 
   
 function formatDate(value) {
@@ -944,19 +1032,27 @@ async function changeCareSubmissionStatus(enabled) {
 // 刷新记录和开关状态
 
 
+
 async function refreshDashboard() {
 
-  const recordTask = currentRecordTab === 'date'
-    ? loadRecords()
-    : loadCareRecords();
+  let recordTask;
+
+  if (currentRecordTab === 'date') {
+    recordTask = loadRecords();
+  } else if (currentRecordTab === 'care') {
+    recordTask = loadCareRecords();
+  } else if (currentRecordTab === 'visit') {
+    recordTask = loadVisitRecords();
+  }
 
   await Promise.all([
-  loadRecords(),
-  loadSubmissionStatus(),
-  loadCareSubmissionStatus()
-]);
+    recordTask,
+    loadSubmissionStatus(),
+    loadCareSubmissionStatus()
+  ]);
 
 }
+
 
 
 
