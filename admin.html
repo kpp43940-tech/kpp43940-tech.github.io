@@ -419,6 +419,7 @@ td { word-break: break-word; }
       <th>浏览器</th>
       <th>访问页面</th>
       <th>访问时间</th>
+      <th>操作</th>
     </tr>
   </thead>
 
@@ -719,7 +720,7 @@ async function loadCareRecords() {
   }
 }
   
-// 读取访客访问记录
+
 async function loadVisitRecords() {
 
   const status = document.getElementById('recordStatus');
@@ -752,6 +753,15 @@ async function loadVisitRecords() {
         <td>${escapeHTML(record.browser)}</td>
         <td>${escapeHTML(record.page)}</td>
         <td>${escapeHTML(formatDate(record.visited_at))}</td>
+        <td>
+          <button
+            type="button"
+            style="background:#e74c3c;color:white;"
+            onclick="deleteVisitRecord(${Number(record.id)})"
+          >
+            🗑️ 删除
+          </button>
+        </td>
       </tr>
     `).join('');
 
@@ -766,6 +776,40 @@ async function loadVisitRecords() {
   }
 
 }
+
+
+// 删除单条访客记录
+async function deleteVisitRecord(id) {
+
+  if (!confirm('确定删除这条访客访问记录吗？删除后无法恢复。')) {
+    return;
+  }
+
+  try {
+
+    const result = await request({
+      action: 'careAdminVisitDelete',
+      token,
+      id
+    });
+
+    if (!result.success) {
+      throw new Error(result.message || '删除失败');
+    }
+
+    alert('访客记录删除成功！');
+
+    await loadVisitRecords();
+
+  } catch (error) {
+
+    alert('删除失败：' + error.message);
+    handleAuthError(error);
+
+  }
+
+}
+
 
 
   
