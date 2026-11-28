@@ -367,6 +367,12 @@ td { word-break: break-word; }
   <button type="button" onclick="switchRecordTab('visit')">
     👀 访客访问记录
   </button>
+
+  
+<button type="button" onclick="switchRecordTab('guestbook')">
+  💌 访客留言
+</button>
+
 </div>
 
 
@@ -427,6 +433,25 @@ td { word-break: break-word; }
 
 </table>
 
+
+<!-- 访客留言管理表 -->
+<table id="guestbookTable" style="display:none">
+
+  <thead>
+    <tr>
+      <th>编号</th>
+      <th>昵称</th>
+      <th>留言主题</th>
+      <th>卡片风格</th>
+      <th>留言内容</th>
+      <th>提交时间</th>
+      <th>操作</th>
+    </tr>
+  </thead>
+
+  <tbody id="guestbookRecordBody"></tbody>
+
+</table>
 
 
     </div>
@@ -633,7 +658,8 @@ async function loadRecords() {
 let currentRecordTab = 'date';
 
 
-// 切换记录分类
+
+// 切换后台记录分类
 function switchRecordTab(type) {
 
   currentRecordTab = type;
@@ -641,11 +667,15 @@ function switchRecordTab(type) {
   const dateTable = document.getElementById('recordTable');
   const careTable = document.getElementById('careTable');
   const visitTable = document.getElementById('visitTable');
+  const guestbookTable = document.getElementById('guestbookTable');
 
+  // 隐藏所有表格
   dateTable.style.display = 'none';
   careTable.style.display = 'none';
   visitTable.style.display = 'none';
+  guestbookTable.style.display = 'none';
 
+  // 根据分类显示对应表格
   if (type === 'date') {
 
     dateTable.style.display = 'table';
@@ -660,6 +690,11 @@ function switchRecordTab(type) {
 
     visitTable.style.display = 'table';
     loadVisitRecords();
+
+  } else if (type === 'guestbook') {
+
+    guestbookTable.style.display = 'table';
+    loadGuestbookRecords();
 
   }
 
@@ -775,6 +810,91 @@ async function loadVisitRecords() {
 
   }
 
+}
+
+  
+// 加载访客留言
+async function loadGuestbookRecords() {
+
+  const table = document.getElementById('guestbookTable');
+  const body = document.getElementById('guestbookRecordBody');
+
+  body.innerHTML = '<tr><td colspan="7">正在加载留言...</td></tr>';
+  table.style.display = 'table';
+
+  try {
+
+    const result = await request({
+      action: 'guestbookAdminList',
+      token
+    });
+
+    if (!result.success || !Array.isArray(result.records)) {
+      throw new Error('留言数据格式不正确');
+    }
+
+    if (result.records.length === 0) {
+      body.innerHTML = '<tr><td colspan="7">目前还没有访客留言。</td></tr>';
+      return;
+    }
+
+    body.innerHTML = result.records.map(record => `
+      <tr>
+        <td>${escapeHTML(record.id)}</td>
+        <td>${escapeHTML(record.nickname)}</td>
+        <td>${escapeHTML(record.category)}</td>
+        <td>${escapeHTML(record.style)}</td>
+        <td style="max-width:300px;white-space:pre-wrap;word-break:break-word;">
+          ${escapeHTML(record.message)}
+        </td>
+        <td>${escapeHTML(formatDate(record.submitted_at))}</td>
+        <td>
+          <button
+            class="danger"
+            onclick="deleteGuestbookRecord(${Number(record.id)})"
+          >
+            删除
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+  } catch (error) {
+
+    body.innerHTML = `
+      <tr>
+        <td colspan="7">加载失败：${escapeHTML(error.message)}</td>
+      </tr>
+    `;
+
+  }
+}
+
+
+// 删除访客留言
+async function deleteGuestbookRecord(id) {
+
+  if (!confirm('确定要删除这条访客留言吗？删除后无法恢复。')) {
+    return;
+  }
+
+  try {
+
+    await request({
+      action: 'guestbookAdminDelete',
+      token,
+      id
+    });
+
+    alert('留言删除成功！');
+
+    await loadGuestbookRecords();
+
+  } catch (error) {
+
+    alert('删除失败：' + error.message);
+
+  }
 }
 
 
